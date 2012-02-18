@@ -18,15 +18,11 @@
   <script type="text/javascript">
     $(function() {
       var client = new ManybotsClient();
-      
-      // Filter the activities you want using their properties
       var filter = {
-        'verbs'   : 'start',
-        // 'objects' : 'commit',
-        // 'targets' : 'person'
+        'verbs' : 'park',
       };
       
-      client.getJSON('/activities', {'filter':filter, 'limit': 100}, function(stream) {
+      client.getJSON('/activities', {'filter':filter, 'limit': 500}, function(stream) {
         var activities = stream.data.items;
         console.log('found ' + activities.length + ' activities');
         
@@ -34,8 +30,18 @@
           var published = new Date((item.published).replace(/-/g,"/").replace(/[TZ]/g," "));
           return published.getDay(); 
         });
-                
-        var results = _.collect(dates, function(items, day){
+        
+        var days = {};
+        
+        days.sunday = dates[0];
+        days.monday = dates[1];
+        days.tuesday = dates[2];
+        days.wednesday = dates[3];
+        days.thursday = dates[4];
+        days.friday = dates[5];
+        days.saturday = dates[6];
+        
+        var results = _.collect(days, function(items, day){
           var total = [];
           var grouped_by_hour = _.groupBy(items, function(item) {
             var published = new Date((item.published).replace(/-/g,"/").replace(/[TZ]/g," "));
