@@ -5,95 +5,28 @@
   
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js" type="text/javascript"></script>
   <script src="https://www.manybots.com/javascripts/manybots.js" type="text/javascript"></script>
-  <script src="http://cdnjs.cloudflare.com/ajax/libs/raphael/2.0.1/raphael-min.js" type="text/javascript">
-  </script>
-  <script type="text/javascript" src="http://g.raphaeljs.com/g.raphael.js">
-  </script>
-  
-  <script src="http://g.raphaeljs.com/g.dot.js" type="text/javascript"></script>
-  
-  <script src="http://documentcloud.github.com/underscore/underscore-min.js" type="text/javascript">
-  </script>
   
   <script type="text/javascript">
     $(function() {
       var client = new ManybotsClient();
       var filter = {
-        'verbs' : 'park',
+        // 'verbs' : 'park',
       };
       
-      client.getJSON('/activities', {'filter':filter, 'limit': 500}, function(stream) {
+      client.getJSON('/activities', {'filter':filter, 'limit': 20}, function(stream) {
         var activities = stream.data.items;
         console.log('found ' + activities.length + ' activities');
         
-        var dates = _.groupBy(activities, function(item) { 
-          var published = new Date((item.published).replace(/-/g,"/").replace(/[TZ]/g," "));
-          return published.getDay(); 
-        });
-        
-        var days = {};
-        
-        days.sunday = dates[0];
-        days.monday = dates[1];
-        days.tuesday = dates[2];
-        days.wednesday = dates[3];
-        days.thursday = dates[4];
-        days.friday = dates[5];
-        days.saturday = dates[6];
-        
-        var results = _.collect(days, function(items, day){
-          var total = [];
-          var grouped_by_hour = _.groupBy(items, function(item) {
-            var published = new Date((item.published).replace(/-/g,"/").replace(/[TZ]/g," "));
-            return published.getHours();
-          });
-          _.each(_.range(24), function(x) {
-            var this_total = grouped_by_hour[x] ? grouped_by_hour[x].length : 0;            
-            total.push(this_total);
-          });
-          return total;
-        });
-        
-        drawPunchCard(results);
-        
+
         for(var i in activities) {
           var activity = new ManybotsItem(activities[i]);
           $('body').append(activity.toHTML);
         }
       });
     });
-    
-    function drawPunchCard(activities) {
-      
-      var r = Raphael("punchcard"),
-          xs = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
-          ys= [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-          data = _.flatten(activities),
-          axisy = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-          axisx = ["12am", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12pm", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"];
-      
-      r.dotchart(10, 10, 620, 260, xs, ys, data, {
-        symbol: "o", 
-        max: 10, 
-        heat: true, 
-        axis: "0 0 1 1", 
-        axisxstep: 23, 
-        axisystep: 6, 
-        axisxlabels: axisx, 
-        axisxtype: " ", 
-        axisytype: " ", 
-        axisylabels: axisy
-      }).
-      hover(function() {
-        this.marker = this.marker || r.tag(this.x, this.y, this.value, 0, this.r + 2).insertBefore(this);
-        this.marker.show();
-      }, function () {
-        this.marker && this.marker.hide();
-      });
-    }
   </script>
 </head>
 <body>
-  <div id="punchcard"></div>
+  <h1>Your 20 most recent activities</h1>
 </body>
 </html>
